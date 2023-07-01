@@ -1,4 +1,4 @@
-# Web-blog-
+# Web-blog
 Welcome to our basic blogging website! This platform allows you to create and publish blog posts, offering various features similar to those found on Facebook's blog section.
 
 Technologies Used
