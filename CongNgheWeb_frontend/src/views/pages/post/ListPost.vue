@@ -86,11 +86,15 @@ onMounted(async () => {
         posts.value = data[1].posts;
     }
 });
+const first = ref(0);
 </script>
 
 <template>
-    <div v-for="post in posts" :key="post.content" class="col-12">
-        <ViewPost :content="post" />
+    <div v-if="posts.length > 0" class="card">
+        <div v-for="post in posts.slice(first, first + 6)" :key="post.content" class="col-12">
+            <ViewPost :content="post" />
+        </div>
+        <Paginator v-model:first="first" :rows="6" :totalRecords="posts.length" template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink" />
     </div>
 </template>
 <style lang="scss" scoped>

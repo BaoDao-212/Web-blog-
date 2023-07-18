@@ -33,30 +33,7 @@ export class CommentService {
     input: CreateCommentInput,
   ): Promise<CreateCommentOutput> {
     try {
-      const { contentComment, postId, userTagsId, file } = input;
-      userTagsId.forEach(async (userID) => {
-        const user = await this.userRepo.findOne({
-          where: {
-            id: userID,
-          },
-        });
-        if (!user)
-          return createError(
-            'Input',
-            'Không tồn tại một trong số những người gắn thẻ này',
-          );
-      });
-      console.log(file);
-
-      const userTags = await this.userRepo.find({
-        where: {
-          id: In(userTagsId),
-        },
-        relations: {
-          comments: true,
-          posts: true,
-        },
-      });
+      const { contentComment, postId, file } = input;
       const post = await this.postRepo.findOne({
         where: {
           id: postId,
@@ -68,7 +45,6 @@ export class CommentService {
         file,
         owner,
         post,
-        userTags,
       });
 
       console.log(CommentH);
@@ -128,7 +104,7 @@ export class CommentService {
     input: UpdateCommentInput,
   ): Promise<UpdateCommentOutput> {
     try {
-      const { commentId, contentComment, file, userTagsId } = input;
+      const { commentId, contentComment, file } = input;
       const comment = await this.commentRepo.findOne({
         where: { id: commentId },
         relations: {
@@ -140,25 +116,10 @@ export class CommentService {
           'Input',
           'Bạn không có quyền xóa bình luận của người khác',
         );
-      let userTags: User[];
-      userTagsId.forEach(async (userID) => {
-        const user = await this.userRepo.findOne({
-          where: {
-            id: userID,
-          },
-        });
-        if (!user)
-          return createError(
-            'Input',
-            'Không tồn tại một trong số những người gắn thẻ này',
-          );
-        userTags.push(user);
-      });
       if (!comment)
         return createError('Input', 'Bình luận này không còn tồn tại');
       comment.contentComment = contentComment;
       comment.file = file;
-      comment.userTags = userTags;
       await this.commentRepo.save(comment);
       return {
         ok: true,
@@ -198,7 +159,6 @@ export class CommentService {
         },
         relations: {
           owner: true,
-          userTags: true,
           post: true,
         },
         order: {

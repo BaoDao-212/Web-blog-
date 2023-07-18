@@ -61,12 +61,11 @@ export const useUserStore = defineStore({
         },
         async afterLogin() {
             try {
-                const { data } = await getInfo();
-                console.log(data);
-                this.userInfo = data;
-                return data;
-                // console.log(this.userInfo);
-                // return user;
+                const userInfo = await new Promise((resolve) => {
+                    resolve(getInfo());
+                });
+                Storage.set('INFO_ACCOUNT', userInfo?.user);
+                return { userInfo };
             } catch (error) {
                 return Promise.reject(error);
             }

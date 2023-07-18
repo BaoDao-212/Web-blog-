@@ -4,9 +4,8 @@ import { useLayout } from '@/layout/composables/layout';
 import 'vue-highlight-code/dist/style.css';
 import { getInfo } from '@/api/account';
 import { listpublicUserPost } from '@/api/post';
-import { useRoute } from 'vue-router';
+import { onBeforeRouteUpdate, useRoute } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
-import NotFound from '../NotFound.vue';
 import Error from '../auth/Error.vue';
 const { isDarkTheme } = useLayout();
 const lineOptions = ref(null);
@@ -91,22 +90,41 @@ onMounted(async () => {
     const data = await listpublicUserPost({ userId: route.params.id });
     console.log(data);
     if (data.posts.length == 0) {
-        console.log('fsdkfjsdlakfhdhfl');
         check.value = false;
         toast.add({ severity: 'error', summary: 'Vui lòng thử lại sau', detail: 'Chưa có thông tin về người dùng này', life: 3000 });
         return;
     }
     if (data.ok) {
         posts.value = data.posts;
-        info.value = data.posts[1].owner;
+        info.value = data.posts[0].owner;
     }
 });
+onBeforeRouteUpdate(async (to, from, next) => {
+    // Làm bất kỳ xử lý cần thiết để cập nhật component tại đây
+    if (to.fullPath.split('/')[1] == 'postuser') {
+        const data = await listpublicUserPost({ userId: to.fullPath.split('/')[2] });
+        console.log(data);
+        if (data.posts.length == 0) {
+            check.value = false;
+            toast.add({ severity: 'error', summary: 'Vui lòng thử lại sau', detail: 'Chưa có thông tin về người dùng này', life: 3000 });
+            next();
+            return;
+        }
+        check.value = true;
+        if (data.ok) {
+            posts.value = data.posts;
+            info.value = data.posts[0].owner;
+        }
+    }
+    next();
+});
+const first = ref(0);
 </script>
 
 <template>
     <Toast />
     <div v-if="check">
-        <Card style="width: 70em">
+        <Card class="w-full">
             <template #header> </template>
             <template #title>
                 <div class="flex flex-column justify-content-center">
@@ -122,8 +140,11 @@ onMounted(async () => {
             </template>
             <template #footer> </template>
         </Card>
-        <div v-for="post in posts" :key="post.content" class="col-12">
-            <ViewPost :content="post" />
+        <div v-if="posts.length > 0" class="card">
+            <div v-for="post in posts.slice(first, first + 6)" :key="post.content" class="col-12">
+                <ViewPost :content="post" />
+            </div>
+            <Paginator v-model:first="first" :rows="6" :totalRecords="posts.length" template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink" />
         </div>
     </div>
     <Error v-else />

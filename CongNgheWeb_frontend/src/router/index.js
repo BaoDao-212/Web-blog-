@@ -26,14 +26,9 @@ const router = createRouter({
                     component: () => import('@/views/pages/Profile.vue')
                 },
                 {
-                    path: '/post/list',
-                    name: 'ListPublicPost',
-                    component: () => import('@/views/pages/post/ListPost.vue')
-                },
-                {
                     path: '/',
                     name: 'dashboard',
-                    component: () => import('@/views/Dashboard.vue')
+                    component: () => import('@/views/pages/post/ListPost.vue')
                 },
                 {
                     path: '/uikit/formlayout',

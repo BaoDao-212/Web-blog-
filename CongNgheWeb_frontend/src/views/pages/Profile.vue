@@ -4,6 +4,7 @@ import { useLayout } from '@/layout/composables/layout';
 import 'vue-highlight-code/dist/style.css';
 import { getInfo } from '@/api/account';
 import { listPostOfUser } from '@/api/post';
+import Storage from '@/utils/Storage';
 const { isDarkTheme } = useLayout();
 const lineOptions = ref(null);
 const applyLightTheme = () => {
@@ -78,22 +79,19 @@ watch(
     { immediate: true }
 );
 const posts = ref([]);
-const info = ref([]);
+const info = ref(Storage.get('INFO_ACCOUNT', null));
 onMounted(async () => {
-    const [data, infoUser] = await Promise.all([listPostOfUser(), getInfo()]);
+    const data = await listPostOfUser();
     console.log(data);
-    console.log(infoUser);
     if (data.ok) {
         posts.value = data.posts;
     }
-    if (infoUser.ok) {
-        info.value = infoUser.user;
-    }
 });
+const first = ref(0);
 </script>
 
 <template>
-    <Card style="width: 70em">
+    <Card class="w-full">
         <template #header> </template>
         <template #title>
             <div class="flex flex-column justify-content-center">
@@ -109,8 +107,11 @@ onMounted(async () => {
         </template>
         <template #footer> </template>
     </Card>
-    <div v-for="post in posts" :key="post.content" class="col-12">
-        <ViewPost :content="post" />
+    <div v-if="posts.length > 0" class="card">
+        <div v-for="post in posts.slice(first, first + 6)" :key="post.content" class="col-12">
+            <ViewPost :content="post" />
+        </div>
+        <Paginator v-model:first="first" :rows="6" :totalRecords="posts.length" template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink" />
     </div>
 </template>
 <style lang="scss" scoped>

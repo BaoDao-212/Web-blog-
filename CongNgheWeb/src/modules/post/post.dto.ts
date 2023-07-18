@@ -11,7 +11,7 @@ import { Limit, Post } from 'src/entities/post.entity';
 import { CoreOutput } from 'src/modules/common/output.dto';
 import { StoredFile } from '../upload/object/StoredFile';
 import { Type } from 'class-transformer';
-import { object } from 'joi';
+import { extend, object } from 'joi';
 
 export class CreatePostInput {
   @ApiProperty({ description: 'users are tagged id of post' })
@@ -42,6 +42,11 @@ export class DeletePostInput {
   @IsNumber()
   postId: number;
 }
+export class TymPostInput {
+  @ApiProperty({ description: 'post id  of post tym' })
+  postId: number[];
+}
+export class TymPostOutput extends CoreOutput {}
 export class DeletePostOutput extends CoreOutput {}
 //thay đổi bài đăng
 export class UpdatePostInput {
@@ -50,7 +55,6 @@ export class UpdatePostInput {
   postId: number;
 
   @ApiProperty({ description: 'users are tagged id of post' })
-  @IsNumber()
   userTagsId?: number[];
 
   @ApiProperty({ description: 'content of this post', type: object })

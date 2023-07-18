@@ -6,7 +6,6 @@ import {
   Entity,
   ManyToOne,
   JoinColumn,
-  OneToMany,
   JoinTable,
   ManyToMany,
 } from 'typeorm';
@@ -20,12 +19,6 @@ export class Comment extends BaseEntity {
   @PrimaryGeneratedColumn()
   @ApiProperty()
   id: number;
-
-  @ApiProperty()
-  @ManyToMany(() => User, (user) => user.id)
-  @JoinTable()
-  userTags: User[];
-
   @ApiProperty()
   @ManyToOne(() => User, (owner) => owner.comments)
   @JoinColumn()

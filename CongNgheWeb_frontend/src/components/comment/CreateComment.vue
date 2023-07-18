@@ -12,24 +12,13 @@ import { usePostStore } from '@/stores/post';
 // tìm kiếm người cần gắn thẻ
 const autoValue = ref(null);
 const selectedAutoValue = ref(null);
-const autoFilteredValue = ref([]);
 const props = defineProps({
     postId: {
         type: Number,
         require: true
     }
 });
-const searchUser = (event) => {
-    setTimeout(() => {
-        if (!event.query.trim().length) {
-            autoFilteredValue.value = [...autoValue.value];
-        } else {
-            autoFilteredValue.value = autoValue.value.filter((country) => {
-                return country.name.toLowerCase().startsWith(event.query.toLowerCase());
-            });
-        }
-    }, 250);
-};
+
 const userStore = useUserStore();
 onMounted(async () => {
     const data = await userStore.getListUser();
@@ -92,7 +81,6 @@ const formatSize = (bytes) => {
 // tải bài viết lên
 const formInline = reactive({
     postId: props.postId,
-    userTagsId: [],
     contentComment: '',
     file: []
 });
@@ -103,7 +91,6 @@ const postComment = async () => {
         toast.add({ severity: 'error', summary: 'Info', detail: 'Vui lòng chờ upload ảnh ', life: 3000 });
         return;
     } else {
-        formInline.userTagsId = selectedAutoValue.value ? selectedAutoValue.value.map((user) => user.id) : [];
         const postStore = usePostStore();
         const data = await to(postStore.createComment(formInline));
         if (data[1].ok) {
@@ -113,7 +100,6 @@ const postComment = async () => {
         files.value = [];
         uploadedFile.value = [];
         fileUploader.value = [];
-        formInline.userTagsId = [];
         formInline.contentComment = '';
         formInline.file = [];
         selectedAutoValue.value = [];
@@ -142,18 +128,6 @@ const postComment = async () => {
             <template #header="{ chooseCallback }">
                 <div class="flex flex-wrap justify-content-between align-items-center flex-1 gap-2">
                     <Button @click="chooseCallback()" icon="pi pi-images" rounded outlined></Button>
-                    <AutoComplete class="" placeholder="Tags" icon="pi pi-hashtag" id="dd" optionLabel="name" :dropdown="true" :multiple="true" v-model="selectedAutoValue" :suggestions="autoFilteredValue" @complete="searchUser($event)" field="name">
-                        <template #option="slotProps">
-                            <div class="flex align-options-center">
-                                <Avatar v-if="!slotProps.option.avartar" icon="pi pi-user" />
-                                <Avatar v-else :src="slotProps.option.avartar.fileUrl" />
-                                <div class="flex flex-column">
-                                    <div class="font-bold text-xl text-cyan-900">{{ slotProps.option.name }}</div>
-                                    <div class="font-italic text-cyan-700">{{ slotProps.option.username }}</div>
-                                </div>
-                            </div>
-                        </template>
-                    </AutoComplete>
                 </div>
             </template>
             <template #content>

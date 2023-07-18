@@ -58,10 +58,10 @@ export class Post extends BaseEntity {
   @IsOptional()
   file?: Array<StoredFile>;
 
-  @Column({ default: 0 })
   @ApiProperty()
-  @IsNumber()
-  numberTym: number;
+  @ManyToMany(() => User, (user) => user.id, { nullable: true })
+  @JoinTable()
+  userTym: User[];
 
   @Column({ default: 0 })
   @ApiProperty()

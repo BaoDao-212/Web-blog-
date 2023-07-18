@@ -6,6 +6,8 @@ import { useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/user';
 import to from '@/utils/awaitTo';
 import { useToast } from 'primevue/usetoast';
+import { getInfo } from '@/api/account';
+import Storage from '@/utils/Storage';
 const { layoutConfig } = useLayout();
 const toast = useToast();
 const router = useRouter();
@@ -44,6 +46,10 @@ const callback = async (response) => {
     console.log('Handle the response', response);
     console.log(response.credential);
     userStore.setToken(response.credential);
+    const userInfo = await new Promise((resolve) => {
+        resolve(getInfo());
+    });
+    Storage.set('INFO_ACCOUNT', userInfo?.user);
     router.push('/');
     toast.add({ severity: 'info', summary: 'Info Message', detail: 'Login successful!' });
 };
@@ -63,8 +69,8 @@ const callback = async (response) => {
                     </div>
 
                     <div>
-                        <label for="email1" class="block text-900 text-xl font-medium mb-2">Email</label>
-                        <InputText id="email1" type="text" placeholder="Email address" class="w-full md:w-30rem mb-5" style="padding: 1rem" v-model="state.formInline.username" />
+                        <label for="email1" class="block text-900 text-xl font-medium mb-2">Username</label>
+                        <InputText id="email1" type="text" placeholder="Username" class="w-full md:w-30rem mb-5" style="padding: 1rem" v-model="state.formInline.username" />
 
                         <label for="password1" class="block text-900 font-medium text-xl mb-2">Password</label>
                         <Password id="password1" v-model="state.formInline.password" placeholder="Password" :toggleMask="true" class="w-full mb-3" inputClass="w-full" inputStyle="padding:1rem"></Password>
@@ -72,7 +78,9 @@ const callback = async (response) => {
                         <Button label="Sign In" class="w-full p-3 text-xl mb-2" @click="handleSubmit()"></Button>
                     </div>
                     <div class="flex justify-content-center m-1">
-                        <Button label="Register" icon="pi pi-user" class="w-full mr-1" @click="handleSubmit()" outlined text raised severity="secondary"></Button>
+                        <router-link :to="{ name: 'Register' }">
+                            <Button label="Register" icon="pi pi-user" class="w-full mr-1 pt-3" style="width: 180px !important" outlined text raised severity="secondary"></Button>
+                        </router-link>
                         <GoogleLogin :callback="callback" prompt auto-login class="ml-1" />
                     </div>
                 </div>

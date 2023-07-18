@@ -16,6 +16,8 @@ import {
   ListPublicPostOutput,
   ListPublicUserPostInput,
   ListPublicUserPostOutput,
+  TymPostInput,
+  TymPostOutput,
   UpdatePostInput,
   UpdatePostOutput,
 } from './post.dto';
@@ -66,6 +68,19 @@ export class PostResolver {
     @Body() input: UpdatePostInput,
   ): Promise<UpdatePostOutput> {
     return this.postService.updatePost(user, input);
+  }
+  @ApiOperation({
+    summary: 'Tym Post',
+  })
+  @Roles(['Any'])
+  @Put('tym')
+  @ApiSecurity('admin')
+  @ApiOkResponse({ type: TymPostOutput })
+  async tymPost(
+    @CurrentUser() user: User,
+    @Body() input: TymPostInput,
+  ): Promise<TymPostOutput> {
+    return this.postService.tymPost(user, input);
   }
   // xem list bài đăng công khai
   @ApiOperation({

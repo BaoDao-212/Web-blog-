@@ -4,6 +4,8 @@ import type { Router, RouteLocationNormalized } from 'vue-router';
 import { ACCESS_TOKEN_KEY } from '../utils/enum/enum';
 import Storage from '../utils/Storage';
 import { LOGIN_NAME, WhiteNameList } from './contant';
+import { usePostStore } from '../stores/post';
+import { tymPost } from '../api/post';
 
 NProgress.configure({ showSpinner: false }); // NProgress Configuration
 
@@ -13,12 +15,17 @@ export function createRouterGuards(router: Router, whiteNameList: WhiteNameList)
     router.beforeEach(async (to, _, next) => {
         NProgress.start(); // start progress bar
         const token = Storage.get(ACCESS_TOKEN_KEY, null);
-        
+
         if (token) {
             if (to.name === LOGIN_NAME) {
                 next({ path: defaultRoutePath });
             } else {
                 const hasRoute = router.hasRoute(to.name!);
+                const post = usePostStore();
+                if (post.getTymPostId) {
+                    const res = await tymPost({ postId: post.getTymPostId });
+                    post.resetTym();
+                }
                 next();
             }
         } else {

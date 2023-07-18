@@ -2,7 +2,6 @@
 import { onMounted, ref, watch, reactive } from 'vue';
 import { useLayout } from '@/layout/composables/layout';
 import 'vue-highlight-code/dist/style.css';
-import { State } from '../utils/enum/enum';
 const { isDarkTheme } = useLayout();
 const lineOptions = ref(null);
 const userStore = useUserStore();
@@ -107,22 +106,19 @@ onMounted(async () => {
             autoValue.value = dataListUser[1];
         }
     }
-    // const dataListUser = await to(userStore.getListUser());
-    // console.log(dataListUser);
-    // if (dataListUser) {
-    //     autoValue.value = dataListUser;
-    // }
 });
 //đăng ảnh lên
 import { useToast } from 'primevue/usetoast';
 import axios from 'axios';
-import to from '../utils/awaitTo';
-import { useUserStore } from '../stores/user';
-import { usePostStore } from '../stores/post';
+import to from '@/utils/awaitTo';
+import { useUserStore } from '@/stores/user';
+import { usePostStore } from '@/stores/post';
+import { updatePost } from '@/api/post';
 import { useRouter } from 'vue-router';
 const toast = useToast();
 const totalSize = ref(0);
-import { QuillEditor } from '@vueup/vue-quill';
+import { Delta, QuillEditor } from '@vueup/vue-quill';
+import { State } from '@/utils/enum/enum';
 const totalSizePercent = ref(0);
 const files = ref([]);
 const fileUploader = ref([]);
@@ -191,28 +187,41 @@ const formatSize = (bytes) => {
 };
 // tải bài viết lên
 const formInline = reactive({
-    userTagsId: [],
-    content: '',
-    limit: '',
-    file: []
+    postId: props.post.id,
+    userTagsId: '',
+    content: new Delta(props.post.content),
+    limit: props.post.limit,
+    file: props.post.file
 });
+console.log(formInline);
+// fileUploader.value
 const postBlog = async () => {
     formInline.userTagsId = searchUser.value ? selectedAutoValue.value.map((user) => user.id) : [];
     if (formInline.limit.trim() == '') {
         return toast.add({ severity: 'error', summary: 'Error', detail: 'Bạn cần chọn trang thái đăng tải cho  bài này', life: 3000 });
     }
-    const postStore = usePostStore();
-    const data = await to(postStore.createPost(formInline));
+    const data = await to(updatePost(formInline));
     console.log(data);
     if (data[1] && data[1].ok) toast.add({ severity: 'info', summary: 'Success', detail: 'File Uploaded', life: 3000 });
     router.push('/');
 };
+selectedAutoValue.value = props.post.userTags;
+const props = defineProps({
+    post: {
+        type: Object,
+        require: true
+    }
+});
+const visible = ref(false);
+const removeFile = (file) => {
+    formInline.file = formInline.file.filter((f) => f != file);
+};
 </script>
 
 <template>
-    <div class="col-12">
+    <Button icon="pi pi-file-edit" @click="visible = !visible" outlined raised class="hover:shadow-5 ml-4" text></Button>
+    <Dialog v-model:visible="visible" maximizable modal header="Update Post" :style="{ width: '100vw' }">
         <div class="card">
-            <h2 class="text-blue-800">Create Post</h2>
             <div class="p-fluid formgrid grid">
                 <div class="card col-12">
                     <Toast />
@@ -251,10 +260,13 @@ const postBlog = async () => {
                                 </div>
                             </div>
 
-                            <div v-if="uploadedFile.length > 0">
+                            <div v-if="formInline.file.length > 0">
                                 <h5>Completed</h5>
                                 <div class="flex flex-wrap p-0 gap-5">
-                                    <div v-for="file of uploadedFile" :key="file" class="card m-0 flex flex-column border-1 surface-border align-items-center">
+                                    <div v-for="file of formInline.file" :key="file" class="card m-0 flex flex-column border-1 surface-border align-items-center">
+                                        <div class="flex justify-content-end" @click="removeFile(file)">
+                                            <Button icon="pi pi-times" style="color: rgb(210, 30, 30); background-color: aliceblue" text></Button>
+                                        </div>
                                         <img v-if="file.filePath.includes('.webp')" role="presentation" :src="file.fileUrl" width="300" />
                                         <video v-else-if="file.filePath.includes('.mp4')" :src="file.fileUrl" player="mp4" controls="true" width="300" />
                                         <audio v-else-if="file.filePath.includes('.mp3')" :src="file.fileUrl" controls="true" width="300" />
@@ -263,12 +275,6 @@ const postBlog = async () => {
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        </template>
-                        <template #empty>
-                            <div class="flex align-items-center justify-content-center flex-column">
-                                <i class="pi pi-cloud-upload border-2 border-circle p-5 text-8xl text-400 border-400" />
-                                <p class="mt-4 mb-0">Drag and drop files to here to upload.</p>
                             </div>
                         </template>
                     </FileUpload>
@@ -298,9 +304,9 @@ const postBlog = async () => {
                 </div>
             </div>
             <div class="flex flex-row-reverse flex-wrap">
-                <Button label="Post" icon="pi pi-upload" class="p-button-help" @click="postBlog()" />
+                <Button label="Update" icon="pi pi-upload" class="p-button-help" @click="postBlog()" />
             </div>
         </div>
-    </div>
+    </Dialog>
 </template>
 <style></style>

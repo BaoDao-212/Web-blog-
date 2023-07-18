@@ -5,6 +5,7 @@ import { useRouter } from 'vue-router';
 import { useUserStore } from '../stores/user';
 import ChangePassword from '../views/account/change-password.vue';
 import Dialog from 'primevue/dialog';
+import Storage from '../utils/Storage';
 const { layoutConfig, onMenuToggle } = useLayout();
 
 const outsideClickListener = ref(null);
@@ -88,6 +89,8 @@ const items = ref([
 const toggle = (event) => {
     menu.value.toggle(event);
 };
+const userData = Storage.get('INFO_ACCOUNT', null);
+const userName = userData.name;
 </script>
 
 <template>
@@ -109,9 +112,9 @@ const toggle = (event) => {
         </Dialog>
         <div class="layout-topbar-menu" :class="topbarMenuClasses">
             <Button class="w-full p-link flex align-items-center p-2 pl-3 text-color hover:surface-200 border-noround" @click="toggle" aria-haspopup="true" aria-controls="overlay_menu">
-                <Avatar icon="pi pi-user" class="mr-2" size="large" style="background-color: #2196f3; color: #ffffff" shape="circle" />
+                <Avatar icon="pi pi-user" :label="userName[0]" class="mr-2" size="large" style="background-color: #2196f3; color: #ffffff" shape="circle" />
                 <div class="flex flex-column align">
-                    <span class="font-bold">Amy Elsner</span>
+                    <span class="font-bold">{{ userName }}</span>
                 </div></Button
             >
             <Menu ref="menu" id="overlay_menu" :model="items" :popup="true" />

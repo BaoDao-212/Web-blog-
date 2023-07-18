@@ -5,19 +5,53 @@ import { createComment } from '../api/comment';
 
 interface PostState {
     posts: [];
+    tymPostId: number[];
+    removeTymPostId: number[];
 }
 export const usePostStore = defineStore({
     id: 'Post',
     state: (): PostState => ({
-        posts: []
+        posts: [],
+        tymPostId: [],
+        removeTymPostId: []
     }),
-
+    getters: {
+        getTymPostId(): number[] {
+            return this.tymPostId;
+        },
+        getRemoveTymPostId(): number[] {
+            return this.removeTymPostId;
+        }
+    },
     actions: {
         async createPost(params: any) {
             try {
                 const data = await createPost(params);
                 console.log(data);
                 return data;
+            } catch (error) {
+                return Promise.reject(error);
+            }
+        },
+        async createTymPostId(postId: any) {
+            try {
+                if (!this.tymPostId.includes(postId)) this.tymPostId.push(postId);
+                return this.tymPostId;
+            } catch (error) {
+                return Promise.reject(error);
+            }
+        },
+        async removeTymPostId(postId: any) {
+            try {
+                if (this.tymPostId.includes(postId)) this.tymPostId = this.tymPostId.filter((id) => postId != id);
+                return this.tymPostId;
+            } catch (error) {
+                return Promise.reject(error);
+            }
+        },
+        async resetTym() {
+            try {
+                this.tymPostId = [];
             } catch (error) {
                 return Promise.reject(error);
             }

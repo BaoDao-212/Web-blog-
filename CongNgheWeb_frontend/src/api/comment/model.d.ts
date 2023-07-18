@@ -51,7 +51,6 @@ declare namespace API {
     };
     type Comment = {
         owner: User;
-        userTags: User[];
         contentComment: string;
         file?: File[];
     };

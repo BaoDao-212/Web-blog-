@@ -10,6 +10,9 @@ import '@vueup/vue-quill/dist/vue-quill.snow.css';
 import '@vueup/vue-quill/dist/vue-quill.bubble.css';
 import { listComment } from '@/api/comment/index.ts';
 import { Delta } from '@vueup/vue-quill';
+import { usePostStore } from '@/stores/post';
+import Storage from '@/utils/Storage';
+import UpdatePost from '@/views/pages/post/UpdatePost.vue';
 const { isDarkTheme } = useLayout();
 
 const lineOptions = ref(null);
@@ -109,10 +112,27 @@ const onDowload = (content) => {
     console.log(content);
     window.location.href = content;
 };
+// tùy chỉnh lưu lượng thả tym
+const userData = Storage.get('INFO_ACCOUNT', null);
+const post = usePostStore();
+const numberTym = ref(props.content.userTym.length);
+const isTym = ref(post.getTymPostId.includes(props.content.id) || props.content.userTym.map((user) => user.id).includes(userData.id));
+const tymFunction = async () => {
+    if (isTym.value) {
+        numberTym.value -= 1;
+        if (!props.content.userTym.map((user) => user.id).includes(userData.id)) await post.removeTymPostId(props.content.id);
+        else await post.createTymPostId(props.content.id);
+    } else {
+        await post.createTymPostId(props.content.id);
+        numberTym.value += 1;
+    }
+    isTym.value = !isTym.value;
+};
+console.log('heloo' + isTym.value);
 </script>
 <template>
     <div class="col-12">
-        <Card style="width: 70em">
+        <Card class="w-full">
             <template #header>
                 <Galleria :value="images" :responsiveOptions="responsiveOptions" :numVisible="5" containerStyle="max-width: 980px">
                     <template #item="slotProps">
@@ -123,9 +143,9 @@ const onDowload = (content) => {
                             <Button label="Link" link @click="onDowload(slotProps.item.fileUrl)">{{ slotProps.item.fileUrl }}</Button>
                         </div>
                     </template>
-                    <template #thumbnail="slotProps">
-                        <img v-if="slotProps.item.filePath.includes('.webp')" role="presentation" :src="slotProps.item.fileUrl" style="width: 40%" />
-                        <video v-else-if="slotProps.item.filePath.includes('.mp4')" role="presentation" :src="slotProps.item.fileUrl" player="mp4" controls="true" style="width: 40%" />
+                    <template #thumbnail="slotProps" v-if="images.length > 1">
+                        <img v-if="slotProps.item.filePath.includes('.webp')" role="presentation" :src="slotProps.item.fileUrl" class="w-4 h-4" />
+                        <video v-else-if="slotProps.item.filePath.includes('.mp4')" role="presentation" :src="slotProps.item.fileUrl" player="mp4" controls="true" style="width: 12%" />
                         <audio v-else-if="slotProps.item.filePath.includes('.mp3')" role="presentation" :src="slotProps.item.fileUrl" controls="true" width="80" />
                         <div v-else-if="slotProps.item.filePath.includes('.docx') || slotProps.item.filePath.includes('.pdf') || slotProps.item.filePath.includes('.pptx')">
                             <Button label="Link" link altKey="true">{{ slotProps.item.fileUrl }}</Button>
@@ -153,8 +173,14 @@ const onDowload = (content) => {
                 <QuillEditor v-model:content="content" theme="bubble" readOnly="true" />
             </template>
             <template #footer>
-                <Button icon="pi pi-heart" severity="danger" text raised rounded :label="props.content.numberTym + ' Tym'" />
-                <Button @click="showComment = !showComment" icon="pi pi-book" :label="comments.length + ' Comment'" severity="info" text raised rounded style="margin-left: 0.5em" />
+                <div class="flex justify-content-between mb-2">
+                    <div class="flex justify-content-start">
+                        <Button icon="pi pi-heart" v-if="isTym" style="background-color: rgb(255, 131, 131)" severity="danger" @click="tymFunction" text raised rounded :label="numberTym + ' Tym'" />
+                        <Button icon="pi pi-heart" v-else severity="danger" @click="tymFunction" text raised rounded :label="numberTym + ' Tym'" />
+                        <Button @click="showComment = !showComment" icon="pi pi-book" :label="comments.length + ' Comment'" severity="info" text raised rounded style="margin-left: 0.5em" />
+                    </div>
+                    <UpdatePost :post="props.content" class="r-50" v-if="userData.id == props.content.owner.id" />
+                </div>
                 <CreateComment :postId="props.content.id" @update-message="updateMessage" />
                 <div v-if="showComment">
                     <div v-for="comment in comments" :key="comment.owner">

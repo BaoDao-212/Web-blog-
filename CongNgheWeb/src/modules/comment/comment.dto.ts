@@ -11,9 +11,6 @@ import { Comment } from 'src/entities/comment.entity';
 
 export class CreateCommentInput {
   @ApiProperty({ description: 'post id of this comment' })
-  userTagsId?: number[];
-
-  @ApiProperty({ description: 'post id of this comment' })
   @IsNumber()
   postId: number;
 
@@ -41,10 +38,6 @@ export class UpdateCommentInput {
   @ApiProperty({ description: 'comment id  of post update' })
   @IsNumber()
   commentId: number;
-
-  @ApiProperty({ description: 'post id of this comment' })
-  @IsNumber()
-  userTagsId?: number[];
 
   @ApiProperty({ description: 'content of this Comment' })
   @IsString()

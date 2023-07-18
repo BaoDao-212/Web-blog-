@@ -13,11 +13,11 @@ import {
   ListPublicPostOutput,
   ListPublicUserPostInput,
   ListPublicUserPostOutput,
+  TymPostInput,
   UpdatePostInput,
   UpdatePostOutput,
 } from './post.dto';
 import { Comment } from 'src/entities/comment.entity';
-import { create } from 'domain';
 
 @Injectable()
 export class PostService {
@@ -167,6 +167,30 @@ export class PostService {
       return createError('Server', 'Lỗi server, thử lại sau');
     }
   }
+  async tymPost(owner: User, input: TymPostInput): Promise<UpdatePostOutput> {
+    try {
+      const { postId } = input;
+      const post = await this.postRepo.find({
+        where: { id: In(postId) },
+        relations: {
+          userTym: true,
+        },
+      });
+      post.forEach(async (p) => {
+        const tymBoolean = p.userTym.map((user) => user.id).includes(owner.id);
+        if (!tymBoolean) p.userTym.push(owner);
+        else p.userTym = p.userTym.filter((u) => u.id != owner.id);
+        await this.postRepo.save(p);
+      });
+      // await this.postRepo.save(post);
+      return {
+        ok: true,
+      };
+    } catch (error) {
+      console.log(error);
+      return createError('Server', 'Lỗi server, thử lại sau');
+    }
+  }
   //danh sach bai dang cong khai
   async listPublicPost(): Promise<ListPublicPostOutput> {
     try {
@@ -184,8 +208,8 @@ export class PostService {
           userTags: true,
           comments: {
             owner: true,
-            userTags: true,
           },
+          userTym: true,
         },
         order: {
           createdAt: 'DESC',
@@ -222,7 +246,6 @@ export class PostService {
     input: ListPublicUserPostInput,
   ): Promise<ListPublicUserPostOutput> {
     try {
-      
       const user = this.userRepo.findOne({
         where: {
           id: input.userId,
@@ -243,8 +266,8 @@ export class PostService {
           userTags: true,
           comments: {
             owner: true,
-            userTags: true,
           },
+          userTym: true,
         },
         order: {
           createdAt: 'DESC',
@@ -272,8 +295,8 @@ export class PostService {
           userTags: true,
           comments: {
             owner: true,
-            userTags: true,
           },
+          userTym: true,
         },
         order: {
           createdAt: 'DESC',

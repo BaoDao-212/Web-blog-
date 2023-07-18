@@ -47,9 +47,7 @@ const comment = ref(props.comment);
                 <div class="flex flex-row ml-1 pt-1">
                     <div class="font-bold text-xl font-semibold text-blue-900">{{ comment.owner.name }}</div>
                 </div>
-                <div v-for="userTag in comment.userTags" :key="userTag.id" class="flex flex-row">
-                    <div class="font-bold font-light text-blue-900">@{{ userTag.name }}</div>
-                </div>
+
                 <p class="pl-2 text-cyan-900">
                     {{ comment.contentComment }}
                 </p>

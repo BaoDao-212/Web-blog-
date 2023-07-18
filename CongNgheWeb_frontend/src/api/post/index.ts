@@ -7,6 +7,21 @@ export function createPost(data: any) {
         data
     });
 }
+export function updatePost(data: any) {
+    return request({
+        url: 'post/update',
+        method: 'put',
+        data
+    });
+}
+export function tymPost(data: any) {
+    return request({
+        url: 'post/tym',
+        method: 'put',
+        data
+    });
+}
+
 export function listPublicPost() {
     return request<API.ListPostOutput>({
         url: 'post/list',
