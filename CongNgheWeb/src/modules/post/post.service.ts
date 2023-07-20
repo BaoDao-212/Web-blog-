@@ -287,7 +287,6 @@ export class PostService {
     try {
       const posts = await this.postRepo.find({
         where: {
-          limit: Limit.Public,
           owner: { id: owner.id },
         },
         relations: {

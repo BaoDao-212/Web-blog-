@@ -60,10 +60,9 @@ export class CommentService {
   }
   async deleteComment(
     owner: User,
-    input: DeleteCommentInput,
+    commentId: number,
   ): Promise<DeleteCommentOutput> {
     try {
-      const { commentId } = input;
       const comment = await this.commentRepo.findOne({
         where: { id: commentId },
         relations: {
@@ -71,12 +70,18 @@ export class CommentService {
           post: true,
         },
       });
+      console.log(commentId);
+      console.log(comment.owner);
+
       const post = await this.postRepo.findOne({
         where: {
           id: comment.post.id,
         },
         relations: { comments: true, owner: true },
       });
+      console.log(comment.owner);
+      console.log(owner);
+
       if (owner.id != post.owner.id && comment.owner.id !== owner.id)
         return createError(
           'Input',

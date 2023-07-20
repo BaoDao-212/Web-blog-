@@ -1,4 +1,13 @@
-import { Body, Controller, Delete, Get, Post, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  Put,
+} from '@nestjs/common';
 import {
   ApiOkResponse,
   ApiOperation,
@@ -33,8 +42,10 @@ export class CommentResolver {
   @ApiOkResponse({ type: CreateCommentOutput })
   async createComment(
     @CurrentUser() user: User,
+
     @Body() input: CreateCommentInput,
   ): Promise<CreateCommentOutput> {
+    console.log(user);
     return this.commentService.createComment(user, input);
   }
 
@@ -42,13 +53,13 @@ export class CommentResolver {
     summary: 'Delete Comment',
   })
   @Roles(['Any'])
-  @Delete('delete')
+  @Delete('delete/:id')
   @ApiOkResponse({ type: UpdateCommentOutput })
   async deleteComment(
     @CurrentUser() user: User,
-    @Body() input: DeleteCommentInput,
+    @Param('id', ParseIntPipe) id: number,
   ): Promise<DeleteCommentOutput> {
-    return this.commentService.deleteComment(user, input);
+    return this.commentService.deleteComment(user, id);
   }
   @ApiOperation({
     summary: 'Update Comment',
